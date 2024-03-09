@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
-import {Col, Row, Form, Select, Input, Button} from "antd";
-import {sources} from "../../data";
+import {Col, Row, Form, Select, Input, Button, DatePicker} from "antd";
+import {categories, sources} from "../../data";
 import {SearchOutlined} from "@ant-design/icons";
-
+const { RangePicker } = DatePicker;
 function HomePage() {
     const [form]=Form.useForm();
     const [loading, setLoading] = useState(false)
@@ -12,14 +12,15 @@ function HomePage() {
     }
 
     return (
-        <Col>
+        <Col span={24}>
             <Row>
                <Form
                 form={form}
                 onFinish={handleFormSubmit}
+                style={{width:'100%'}}
                >
                    <Row wrap={true} gutter={[25]}>
-                       <Col span={7}>
+                       <Col span={4}>
                            <Form.Item name={"source"} label={"Sources"} >
                                <Select
                                    options={sources}
@@ -28,28 +29,30 @@ function HomePage() {
                                />
                            </Form.Item>
                        </Col>
-                       <Col span={7}>
+                       <Col span={4}>
                            <Form.Item name={"category"} label={"Categories"} >
                                <Select
-                                   options={sources}
+                                   options={categories}
                                    aria-multiline={true}
                                />
                            </Form.Item>
                        </Col>
                        <Col span={7}>
                            <Form.Item name={"publishDate"} label={"Publish Date"} >
-                               <Input/>
+                               <RangePicker
+                                   format="YYYY-MM-DD"
+                               />
                            </Form.Item>
                        </Col>
-                       <Col span={3}>
+                       <Col span={5}>
                            <Button
                                type={"primary"}
-                               size={"large"}
+                               size={"middle"}
                                loading={loading}
                                htmlType={"submit"}
                                icon={<SearchOutlined />}
                                color={"#E74E22"}
-                               style={{background:"E74E22" , color:'white', width:'85px'}}
+                               style={{background:"E74E22" , color:'white', width:'185px'}}
                            >
                                Search
                            </Button>
