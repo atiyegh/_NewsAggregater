@@ -1,14 +1,40 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Col, Row, Form, Select, Input, Button, DatePicker} from "antd";
 import {categories, sources} from "../../data";
 import {SearchOutlined} from "@ant-design/icons";
+import {getNewsFromGuardian, getNewsFromNewsApi, getNewsFromNYTimes} from "../../Api";
 const { RangePicker } = DatePicker;
 function HomePage() {
     const [form]=Form.useForm();
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false);
+
 
     const handleFormSubmit=(values)=>{
         console.log("values", values)
+    }
+
+    useEffect(() => {
+        getNews()
+    }, []);
+
+    async function getNews(){
+        setLoading(true)
+        try{
+            const getNewsGuardianResponse=await getNewsFromGuardian()
+            console.log({getNewsGuardianResponse})
+            if(getNewsGuardianResponse?.response?.status==="ok"){
+                const getNewsApiResponse=await getNewsFromNewsApi();
+                console.log({getNewsApiResponse})
+                if(getNewsApiResponse?.status==="ok"){
+                    const getNewsNYTimesResponse=await getNewsFromNYTimes()
+                    console.log({getNewsNYTimesResponse})
+                }
+            }
+        }catch(error){
+            console.log({error})
+        }finally {
+
+        }
     }
 
     return (
