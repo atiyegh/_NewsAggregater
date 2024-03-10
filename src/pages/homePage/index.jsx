@@ -3,10 +3,75 @@ import {Col, Row, Form, Select, Input, Button, DatePicker, Typography} from "ant
 import {categories, sources} from "../../data";
 import {SearchOutlined} from "@ant-design/icons";
 import {getNewsFromGuardian, getNewsFromNewsApi, getNewsFromNYTimes} from "../../Api";
-const { RangePicker } = DatePicker;
+
 function HomePage() {
     const [form]=Form.useForm();
-    // const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [apiNewsData, setApiNewsData] = useState([]);
+    const [theGuardianData, setTheGuardianData] = useState([]);
+    const [nYTimesData, setNYTimesData] = useState([]);
+    const [convertedData, setConvertedData] = useState([]);
+
+    useEffect(() => {
+        console.log({apiNewsData})
+        console.log({theGuardianData})
+        console.log({nYTimesData})
+
+    }, [apiNewsData,theGuardianData,nYTimesData]);
+
+    useEffect(() => {
+        apiNewsConvertData()
+    }, [apiNewsData]);
+
+    useEffect(() => {
+        theGuardianConvertData()
+    }, [theGuardianData]);
+
+    useEffect(() => {
+        nYTimesCovertData()
+    }, [nYTimesData]);
+
+    function theGuardianConvertData(){
+        const convertedData=theGuardianData?.map((newsItems)=>{
+            return {
+                author:null,
+                description:null,
+                source:"theguardian",
+                url:newsItems?.webUrl,
+                title:newsItems?.webTitle,
+                category:newsItems?.sectionName,
+                imgSrc:`${newsItems?.webUrl}#img-1`,
+                publishDate:newsItems?.webPublicationDate
+            }
+        })
+
+        setConvertedData(prevState => {
+            return prevState.length>0 ? convertedData.length>0 ? [...prevState,...convertedData ] : [...prevState]:[]
+        })
+    }
+
+    function nYTimesCovertData(){
+
+    }
+    function apiNewsConvertData(){
+        const convertedData=apiNewsData?.map((newsItems)=>{
+            return {
+                author:newsItems?.author,
+                description:newsItems?.description,
+                source:newsItems?.source?.name,
+                url:newsItems?.webUrl,
+                title:newsItems?.webTitle,
+                category:newsItems?.sectionName,
+                imgSrc:`${newsItems?.webUrl}#img-1`,
+                publishDate:newsItems?.webPublicationDate
+            }
+        })
+
+        setConvertedData(prevState => {
+            return prevState.length>0 ? convertedData.length>0 ? [...prevState,...convertedData ] : [...prevState]:[]
+        })
+    }
+
 
 
     const handleFormSubmit=(values)=>{
@@ -19,54 +84,79 @@ function HomePage() {
     }, []);
 
     function makeQueriesForGuardian(filterValues){
-        const {category,keyword,source, fromPublishedDate,toPublishedDate}=filterValues;
-        console.log({source})
-        const categoryQuery=category?`sectionName=${category}`:'';
-        const keywordQuery=keyword?`webTitle=${keyword}`:'';
-        const fromPublishedDateQuery=fromPublishedDate?`from-date=${fromPublishedDate?.toISOString()}`:''
-        const toPublishedDateQuery=toPublishedDate?`to-date=${toPublishedDate?.toISOString()}`:''
+        const {category,keyword,source, PublishedDate}=filterValues;
+        // console.log({source})
+        const finalQueryArray=[];
+        let finalQuery='';
+        finalQueryArray.push(category?`sectionName=${category}`:'')
+        finalQueryArray.push(keyword?`webTitle=${keyword}`:'');
+        finalQueryArray.push(PublishedDate?`PublishedDate=${PublishedDate?.toISOString()}`:'')
 
-        console.log({categoryQuery},{keywordQuery},{fromPublishedDateQuery},{toPublishedDateQuery} )
+        const filteredfinalQArr=finalQueryArray.filter((query)=> query?.length>0)
+
+        for (const filteredfinalQArrKey in filteredfinalQArr) {
+            // console.log({filteredfinalQArrKey})
+            finalQuery=finalQuery.concat(filteredfinalQArr[filteredfinalQArrKey],"&")
+        }
+
+        // console.log({finalQuery} )
+
+        return finalQuery
+    }
+
+    function makeQueriesForApiNews(filterValues){
+        const {category,keyword,source,PublishedDate}=filterValues
+        const finalQueryArray=[];
+        let finalQuery='';
+
+        finalQueryArray.push(source?`sources=${source}`:'')
+        finalQueryArray.push(PublishedDate?`from=${PublishedDate?.toISOString().split("T")[0]}`:'')
+        //ApiNews does not support category filter so I consider category like a keyword
+        const keywordQ=category ? keyword ? `q=${keyword},${category}` : `q=${category}`:''
+        finalQueryArray.push(keywordQ)
     }
 
     function getFilterValues(){
         const category=form.getFieldValue("category") || undefined;
         const keyword=form.getFieldValue("keyword") || undefined;
         const source=form.getFieldValue("source") || undefined;
-        const fromPublishedDate=(form.getFieldValue("publishDate") &&
-            (form.getFieldValue("publishDate")[0]<=form.getFieldValue("publishDate")[1]?form.getFieldValue("publishDate")[0]:form.getFieldValue("publishDate")[1]
-            )) || undefined
-        const toPublishedDate=(form.getFieldValue("publishDate") &&
-            (form.getFieldValue("publishDate")[0]>form.getFieldValue("publishDate")[1]?form.getFieldValue("publishDate")[0]:form.getFieldValue("publishDate")[1]
-            )) || undefined
+        const PublishedDate=form.getFieldValue("publishDate") || undefined;
 
-        return {category,keyword,source,fromPublishedDate,toPublishedDate}
+        // console.log({PublishedDate})
+        return {category,keyword,source,PublishedDate}
     }
     async function getNews(filters){
-        // setLoading(true)
+        setLoading(true)
         const filterValues=filters && getFilterValues()
-        filterValues && filterValues.source==="theguardian" && makeQueriesForGuardian(filterValues)
+        const queriesForGuardian=filterValues && filterValues.source==="theguardian" && makeQueriesForGuardian(filterValues)
+        const queriesForNewsApi=filterValues && (filterValues.category==="Apple" || filterValues.category==="Tesla") && makeQueriesForApiNews(filterValues)
 
-        const queriesForGuardian=filters ? `` :"";
-        const queriesForNewsApi=filters ? `` : "";
+        // const queriesForGuardian=filters ? `` :"";
+        // const queriesForNewsApi=filters ? `` : "";
         const queriesForNYTimes=filters? `` :"";
 
-        // try{
-        //     const getNewsGuardianResponse=await getNewsFromGuardian(queriesForGuardian ?? "")
-        //     console.log({getNewsGuardianResponse})
-        //     if(getNewsGuardianResponse?.response?.status==="ok"){
-        //         const getNewsApiResponse=await getNewsFromNewsApi(queriesForNewsApi ?? "");
-        //         console.log({getNewsApiResponse})
-        //         if(getNewsApiResponse?.status==="ok"){
-        //             const getNewsNYTimesResponse=await getNewsFromNYTimes(queriesForNYTimes ?? "")
-        //             console.log({getNewsNYTimesResponse})
-        //         }
-        //     }
-        // }catch(error){
-        //     console.log({error})
-        // }finally {
-        //     // setLoading(false)
-        // }
+        // console.log({queriesForGuardian})
+        try{
+            const getNewsGuardianResponse=await getNewsFromGuardian()
+            console.log({getNewsGuardianResponse},getNewsGuardianResponse?.response?.status )
+            if(getNewsGuardianResponse?.response?.status==="ok"){
+                setTheGuardianData(getNewsGuardianResponse?.response?.results)
+                const getNewsApiResponse=await getNewsFromNewsApi();
+                console.log({getNewsApiResponse},getNewsApiResponse?.status)
+                if(getNewsApiResponse?.status==="ok"){
+                    setApiNewsData(getNewsApiResponse?.articles)
+                    const getNewsNYTimesResponse=await getNewsFromNYTimes()
+                    if(getNewsNYTimesResponse.status==="OK"){
+                    console.log({getNewsNYTimesResponse},getNewsNYTimesResponse.status)
+                        setNYTimesData(getNewsNYTimesResponse?.response?.docs)
+                    }
+                }
+            }
+        }catch(error){
+            console.log({error})
+        }finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -97,6 +187,7 @@ function HomePage() {
                                <Select
                                    options={sources}
                                    aria-multiline={true}
+                                   showSearch={true}
 
                                />
                            </Form.Item>
@@ -106,13 +197,16 @@ function HomePage() {
                                <Select
                                    options={categories}
                                    aria-multiline={true}
+                                   showSearch={true}
                                />
                            </Form.Item>
                        </Col>
                        <Col span={7}>
                            <Form.Item name={"publishDate"} label={"Publish Date"} >
-                               <RangePicker
+                               <DatePicker
                                    format="YYYY-MM-DD"
+                                   showTime
+                                   needConfirm={false}
                                />
                            </Form.Item>
                        </Col>
