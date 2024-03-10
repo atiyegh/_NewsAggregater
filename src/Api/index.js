@@ -23,4 +23,12 @@ export async function getNewsFromNYTimes(queries=""){
             return response.data
         })
     return res
+
+}
+export async function getSourcesForApiNews(){
+    const res=axios.get("https://newsapi.org/v2/top-headlines/sources?apiKey=c32f46432a214da98b703daa33b33d72")
+        .then((response)=>{
+            return response.data
+        })
+    return res
 }

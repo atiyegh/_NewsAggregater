@@ -1,49 +1,56 @@
 import React, {useEffect, useState} from 'react';
 import {Col, Row, Form, Select, Input, Button, DatePicker, Typography, Card} from "antd";
-import {categories, sources} from "../../data";
-import {LoadingOutlined, SearchOutlined} from "@ant-design/icons";
-import {getNewsFromGuardian, getNewsFromNewsApi, getNewsFromNYTimes} from "../../Api";
+import {categories, convertedDta, sources} from "../../data";
+import {CloseCircleOutlined, LoadingOutlined, SearchOutlined} from "@ant-design/icons";
+import {getNewsFromGuardian, getNewsFromNewsApi, getNewsFromNYTimes, getSourcesForApiNews} from "../../Api";
 import {Link, useNavigate} from "react-router-dom";
+import {arraysIntersection} from "../../utils";
 const {Meta}=Card
 const { RangePicker } = DatePicker;
 function HomePage() {
     const [form]=Form.useForm();
-    const [loading, setLoading] = useState(false);
-    // const [apiNewsData, setApiNewsData] = useState([]);
-    // const [theGuardianData, setTheGuardianData] = useState([]);
-    // const [nYTimesData, setNYTimesData] = useState([]);
-    const [convertedData, setConvertedData] = useState([]);
-    const [filteredData, setFilteredData] = useState(convertedData);
-    const navigate = useNavigate();
+    const [convertedData, setConvertedData] = useState(convertedDta);
+    const [filteredData, setFilteredData] = useState(null);
 
     useEffect(() => {
-        getNews()
+        // getNews()
+        getSources()
     }, []);
 
-    // useEffect(() => {
-        // console.log({apiNewsData})
-        // console.log({theGuardianData})
-        // console.log({nYTimesData})
 
-    // }, [apiNewsData,theGuardianData,nYTimesData]);
-
+        // console.log('mmmsourceOptions',JSON.parse(localStorage.getItem("sourceOptions")))
     useEffect(() => {
         console.log({convertedData})
     }, [convertedData]);
 
-
-    // useEffect(() => {
-    //     apiNewsConvertData()
-    // }, [apiNewsData]);
-    //
-    // useEffect(() => {
-    //     theGuardianConvertData()
-    // }, [theGuardianData]);
-    //
-    // useEffect(() => {
-    //     nYTimesCovertData()
-    // }, [nYTimesData]);
-
+    async function getSources(){
+        try{
+            const apiNewsSourcesResponse=await getSourcesForApiNews();
+            console.log({
+                apiNewsSourcesResponse
+            })
+            if(apiNewsSourcesResponse?.status==="ok"){
+                const sourceOptions=apiNewsSourcesResponse?.sources?.map((src)=>{
+                    return {
+                        label:src?.name,
+                        value:src?.name,
+                    }
+                })
+                sourceOptions.push({
+                    label:'theguardian',
+                    value:'theguardian'
+                })
+                sourceOptions.push({
+                    label:'The New York Times',
+                    value:'The New York Times'
+                })
+                localStorage.setItem("sourceOptions", JSON.stringify(sourceOptions))
+                console.log('mmmsourceOptions',JSON.parse(localStorage.getItem("sourceOptions")))
+            }
+        }catch (error){
+            console.log({error})
+        }
+    }
     function theGuardianConvertData(theGuardianData){
         console.log('calling theGuardianConvertData')
         const theGuardianconvertedData=theGuardianData.length>0 ? theGuardianData?.map((newsItems)=>{
@@ -77,11 +84,11 @@ function HomePage() {
                 publishDate:newsItems?.pub_date?.split("T")[0]
             }
         }):[]
-        console.log("convertedData NYTimes", convertedData)
         setConvertedData(prevState => {
             return [...prevState,...nYTimesConvertedData ]
         })
     }
+
     function apiNewsConvertData(apiNewsData){
         console.log("calling apiNewsConvertData")
         const apiNwsConvertedData=apiNewsData?.length>0 ? apiNewsData?.map((newsItems)=>{
@@ -91,7 +98,7 @@ function HomePage() {
                 source:newsItems?.source?.name,
                 url:newsItems?.url,
                 title:newsItems?.title,
-                category:null,
+                category:"Tesla",
                 imgSrc:newsItems?.urlToImage,
                 publishDate:newsItems?.publishedAt?.split("T")[0]
             }
@@ -103,55 +110,45 @@ function HomePage() {
         })
     }
 
-    function getFilterValues(){
-        const category=form.getFieldValue("category") || undefined;
-        const keyword=form.getFieldValue("keyword") || undefined;
-        const source=form.getFieldValue("source") || undefined;
-        console.log("publishData",form.getFieldValue("publishDate"))
-        const fromPublishedDate=(form.getFieldValue("publishDate") && form.getFieldValue("publishDate")[0]) || undefined;
-        const toPublishedDate=(form.getFieldValue("publishDate") && form.getFieldValue("publishDate")[1]) || undefined;
-
-        console.log({source})
-        console.log({category})
-        console.log('ppppp',fromPublishedDate?.toISOString(), toPublishedDate?.toISOString())
-        return {category,keyword,source,fromPublishedDate,toPublishedDate}
-    }
-
     function handleChangeFilters(_,values){
-        let filteredDataByUser=convertedData.length>0 ? [...convertedData] :[]
+        console.log({values})
+        let filterArray=[];
+
         if(values?.category){
-            filteredDataByUser=filteredDataByUser?.filter((newsItem)=>{
-                return newsItem.category===values?.category
-            })
+            values?.category?.length>0 && filterArray.push(convertedData?.filter((newsItem)=>{
+                return values?.category?.includes(newsItem.category)
+            }))
         }
         if(values?.keyword){
-            filteredDataByUser=filteredDataByUser?.filter((newsItem)=>{
-                console.log({newsItem}, newsItem?.title, newsItem?.title?.include(values?.keyword))
-                return newsItem?.title?.include(values?.keyword) || newsItem?.description?.include(values?.keyword)
-            })
+            filterArray.push(convertedData?.filter((newsItem)=>{
+                return newsItem?.title?.toLowerCase()?.includes(values?.keyword?.toLowerCase()) || newsItem?.description?.toLowerCase()?.includes(values?.keyword?.toLowerCase())
+            }))
         }
         if(values?.source){
-            filteredDataByUser=filteredDataByUser?.filter((newsItem)=>{
-                return newsItem.source===values?.source
-            })
+            console.log("source",values?.source)
+            values?.source?.length>0 &&  filterArray.push(convertedData?.filter((newsItem)=>{
+                return values?.source?.includes(newsItem.source)}))
         }
-        if(values?.publishDate){
-            const fromPublishedDate=(values?.publishDate?.length>0 && values?.publishDate[0]) || undefined;
-            const toPublishedDate=(values?.publishDate?.length>0 && values?.publishDate[1]) || undefined;
-
-            filteredDataByUser=filteredDataByUser.filter((newsItem)=>{
-                return newsItem.publishDate>= fromPublishedDate && newsItem.publishDate<toPublishedDate
-            })
+        if(Array.isArray(values?.publishDate)){
+            const fromPublishedDate=(values?.publishDate?.length>0 && values?.publishDate[0]?.toISOString().split("T")[0]) || undefined;
+            const toPublishedDate=(values?.publishDate?.length>0 && values?.publishDate[1]?.toISOString().split("T")[0]) || undefined;
+            console.log({fromPublishedDate})
+            console.log({toPublishedDate})
+            filterArray.push(convertedData.filter((newsItem)=>{
+                console.log("publishDate",newsItem,newsItem.publishDate>= fromPublishedDate && newsItem.publishDate<toPublishedDate)
+                return newsItem.publishDate>= fromPublishedDate && newsItem.publishDate<=toPublishedDate
+            }))
         }
+        console.log({filterArray})
+        const filteredDataByUser=filterArray?.length>0 && arraysIntersection(...filterArray)
         console.log({filteredDataByUser})
-        setFilteredData(filteredDataByUser)
+        setFilteredData(filteredDataByUser ? filteredDataByUser :null )
     }
 
 
     async function getNews(){
         console.log("calling getNews")
 
-        setLoading(true)
         try{
             const getNewsGuardianResponse=await getNewsFromGuardian()
             console.log({getNewsGuardianResponse},getNewsGuardianResponse?.response?.status )
@@ -170,8 +167,6 @@ function HomePage() {
             }
         }catch(error){
             console.log({error})
-        }finally {
-            setLoading(false)
         }
     }
 
@@ -201,10 +196,10 @@ function HomePage() {
                        <Col xs={20} sm={10} md={6} lg={5} xl={4}>
                            <Form.Item name={"source"} label={"Sources"} >
                                <Select
-                                   options={sources}
-                                   aria-multiline={true}
+                                   options={localStorage.getItem("sourceOptions") ? JSON.parse(localStorage.getItem("sourceOptions")) : []}
                                    showSearch={true}
-
+                                   allowClear={true}
+                                   mode={"multiple"}
                                />
                            </Form.Item>
                        </Col>
@@ -212,8 +207,9 @@ function HomePage() {
                            <Form.Item name={"category"} label={"Categories"} >
                                <Select
                                    options={categories}
-                                   aria-multiline={true}
                                    showSearch={true}
+                                   allowClear={true}
+                                   mode={"multiple"}
                                />
                            </Form.Item>
                        </Col>
@@ -225,32 +221,17 @@ function HomePage() {
                                />
                            </Form.Item>
                        </Col>
-                       {/*<Col span={5}>*/}
-                       {/*    <Button*/}
-                       {/*        type={"primary"}*/}
-                       {/*        size={"middle"}*/}
-                       {/*        // loading={loading}*/}
-                       {/*        htmlType={"submit"}*/}
-                       {/*        // icon={<SearchOutlined />}*/}
-                       {/*        color={"#E74E22"}*/}
-                       {/*        style={{ width:'100px'}}*/}
-                       {/*    >*/}
-                       {/*        Search*/}
-                       {/*    </Button>*/}
-                       {/*</Col>*/}
                    </Row>
                </Form>
             </Row>
             <Row justify={"center"} wrap={true} gutter={[20,20]} style={{marginRight:'35px', marginLeft:"35px", marginTop:"30px", marginBottom:'50px'}}>
                 {
-                    convertedData?.length>0 ? filteredData?.map((newsItem)=>{
-                        return <Col xs={24} sm={12} md={8} lg={8} xl={6}>
+                    convertedData?.length>0 ? (filteredData ?? convertedData)?.map((newsItem)=>{
+                        return <Col xs={24} sm={12} md={8} lg={8} xl={6} key={newsItem?.url}>
                             <Link to={`${newsItem?.url}`} target="_blank">
                                 <Card
                                     hoverable
-                                    // onClick={()=>navigate.navigate(`${newsItem?.url}`)}
                                     style={{ height: 100 }}
-                                    // cover={<img alt={newsItem?.title.split(" ")[0]} src={newsItem?.imgSrc} />}
                                 >
                                     <Meta title={newsItem?.title} description={newsItem?.publishDate}/>
                                     <Typography style={{color:"#8C8C8C"}}>{`Source: ${newsItem?.source ?? "NA"}`}</Typography>
