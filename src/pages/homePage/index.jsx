@@ -4,7 +4,7 @@ import {categories, convertedDta, sources} from "../../data";
 import {CloseCircleOutlined, LoadingOutlined, SearchOutlined} from "@ant-design/icons";
 import {getNewsFromGuardian, getNewsFromNewsApi, getNewsFromNYTimes, getSourcesForApiNews} from "../../Api";
 import {Link, useNavigate} from "react-router-dom";
-import {arraysIntersection} from "../../utils";
+import {arraysIntersection, getSources} from "../../utils";
 const {Meta}=Card
 const { RangePicker } = DatePicker;
 function HomePage() {
@@ -14,7 +14,7 @@ function HomePage() {
 
     useEffect(() => {
         // getNews()
-        getSources()
+        !localStorage.getItem("sourceOptions") && getSources()
     }, []);
 
 
@@ -23,34 +23,7 @@ function HomePage() {
         console.log({convertedData})
     }, [convertedData]);
 
-    async function getSources(){
-        try{
-            const apiNewsSourcesResponse=await getSourcesForApiNews();
-            console.log({
-                apiNewsSourcesResponse
-            })
-            if(apiNewsSourcesResponse?.status==="ok"){
-                const sourceOptions=apiNewsSourcesResponse?.sources?.map((src)=>{
-                    return {
-                        label:src?.name,
-                        value:src?.name,
-                    }
-                })
-                sourceOptions.push({
-                    label:'theguardian',
-                    value:'theguardian'
-                })
-                sourceOptions.push({
-                    label:'The New York Times',
-                    value:'The New York Times'
-                })
-                localStorage.setItem("sourceOptions", JSON.stringify(sourceOptions))
-                console.log('mmmsourceOptions',JSON.parse(localStorage.getItem("sourceOptions")))
-            }
-        }catch (error){
-            console.log({error})
-        }
-    }
+
     function theGuardianConvertData(theGuardianData){
         console.log('calling theGuardianConvertData')
         const theGuardianconvertedData=theGuardianData.length>0 ? theGuardianData?.map((newsItems)=>{

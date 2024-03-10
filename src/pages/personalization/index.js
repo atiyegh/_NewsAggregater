@@ -1,10 +1,14 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Button, Col, Form, Input, Row, Select} from "antd";
 import {categories} from "../../data";
+import {getSources} from "../../utils";
 
 function Personalization() {
     const [form]=Form.useForm();
 
+    useEffect(() => {
+        !localStorage.getItem("sourceOptions") && getSources()
+    }, []);
     const handleFinish=()=>{
         //Probably there be an API call to make the users feed based on what has been selected in this form
         console.log("submitted")
