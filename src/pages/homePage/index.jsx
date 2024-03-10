@@ -5,12 +5,13 @@ import {LoadingOutlined, SearchOutlined} from "@ant-design/icons";
 import {getNewsFromGuardian, getNewsFromNewsApi, getNewsFromNYTimes} from "../../Api";
 import {Link, useNavigate} from "react-router-dom";
 const {Meta}=Card
+const { RangePicker } = DatePicker;
 function HomePage() {
     const [form]=Form.useForm();
     const [loading, setLoading] = useState(false);
-    const [apiNewsData, setApiNewsData] = useState([]);
-    const [theGuardianData, setTheGuardianData] = useState([]);
-    const [nYTimesData, setNYTimesData] = useState([]);
+    // const [apiNewsData, setApiNewsData] = useState([]);
+    // const [theGuardianData, setTheGuardianData] = useState([]);
+    // const [nYTimesData, setNYTimesData] = useState([]);
     const [convertedData, setConvertedData] = useState([]);
     const [filteredData, setFilteredData] = useState(convertedData);
     const navigate = useNavigate();
@@ -19,31 +20,31 @@ function HomePage() {
         getNews()
     }, []);
 
-    useEffect(() => {
-        console.log({apiNewsData})
-        console.log({theGuardianData})
-        console.log({nYTimesData})
+    // useEffect(() => {
+        // console.log({apiNewsData})
+        // console.log({theGuardianData})
+        // console.log({nYTimesData})
 
-    }, [apiNewsData,theGuardianData,nYTimesData]);
+    // }, [apiNewsData,theGuardianData,nYTimesData]);
 
     useEffect(() => {
         console.log({convertedData})
     }, [convertedData]);
 
 
-    useEffect(() => {
-        apiNewsConvertData()
-    }, [apiNewsData]);
+    // useEffect(() => {
+    //     apiNewsConvertData()
+    // }, [apiNewsData]);
+    //
+    // useEffect(() => {
+    //     theGuardianConvertData()
+    // }, [theGuardianData]);
+    //
+    // useEffect(() => {
+    //     nYTimesCovertData()
+    // }, [nYTimesData]);
 
-    useEffect(() => {
-        theGuardianConvertData()
-    }, [theGuardianData]);
-
-    useEffect(() => {
-        nYTimesCovertData()
-    }, [nYTimesData]);
-
-    function theGuardianConvertData(){
+    function theGuardianConvertData(theGuardianData){
         console.log('calling theGuardianConvertData')
         const theGuardianconvertedData=theGuardianData.length>0 ? theGuardianData?.map((newsItems)=>{
             return {
@@ -59,12 +60,10 @@ function HomePage() {
         }):[]
         console.log("convertedData the guardia",theGuardianconvertedData ,theGuardianconvertedData.length>0 )
 
-        setConvertedData(prevState => {
-            return [...prevState,...theGuardianconvertedData ]
-        })
+        setConvertedData([...theGuardianconvertedData])
     }
 
-    function nYTimesCovertData(){
+    function nYTimesCovertData(nYTimesData){
         console.log('calling nYTimesCovertData')
         const nYTimesConvertedData=nYTimesData?.length>0 ? nYTimesData?.map((newsItems)=>{
             return {
@@ -83,7 +82,7 @@ function HomePage() {
             return [...prevState,...nYTimesConvertedData ]
         })
     }
-    function apiNewsConvertData(){
+    function apiNewsConvertData(apiNewsData){
         console.log("calling apiNewsConvertData")
         const apiNwsConvertedData=apiNewsData?.length>0 ? apiNewsData?.map((newsItems)=>{
             return {
@@ -108,44 +107,47 @@ function HomePage() {
         const category=form.getFieldValue("category") || undefined;
         const keyword=form.getFieldValue("keyword") || undefined;
         const source=form.getFieldValue("source") || undefined;
-        const PublishedDate=form.getFieldValue("publishDate") || undefined;
+        console.log("publishData",form.getFieldValue("publishDate"))
+        const fromPublishedDate=(form.getFieldValue("publishDate") && form.getFieldValue("publishDate")[0]) || undefined;
+        const toPublishedDate=(form.getFieldValue("publishDate") && form.getFieldValue("publishDate")[1]) || undefined;
 
-        return {category,keyword,source,PublishedDate}
+        console.log({source})
+        console.log({category})
+        console.log('ppppp',fromPublishedDate?.toISOString(), toPublishedDate?.toISOString())
+        return {category,keyword,source,fromPublishedDate,toPublishedDate}
     }
 
-    function filterDataBasedOnUserSearch(){
-        const {category,keyword,source,PublishedDate}=getFilterValues();
-        let filteredData=convertedData.length>0 ? [...convertedData] :[]
-        if(category){
-
-
+    function handleChangeFilters(_,values){
+        let filteredDataByUser=convertedData.length>0 ? [...convertedData] :[]
+        if(values?.category){
+            filteredDataByUser=filteredDataByUser?.filter((newsItem)=>{
+                return newsItem.category===values?.category
+            })
         }
-        if(keyword){
-
+        if(values?.keyword){
+            filteredDataByUser=filteredDataByUser?.filter((newsItem)=>{
+                console.log({newsItem}, newsItem?.title, newsItem?.title?.include(values?.keyword))
+                return newsItem?.title?.include(values?.keyword) || newsItem?.description?.include(values?.keyword)
+            })
         }
-        if(source){
-
+        if(values?.source){
+            filteredDataByUser=filteredDataByUser?.filter((newsItem)=>{
+                return newsItem.source===values?.source
+            })
         }
-        if(PublishedDate){
+        if(values?.publishDate){
+            const fromPublishedDate=(values?.publishDate?.length>0 && values?.publishDate[0]) || undefined;
+            const toPublishedDate=(values?.publishDate?.length>0 && values?.publishDate[1]) || undefined;
 
+            filteredDataByUser=filteredDataByUser.filter((newsItem)=>{
+                return newsItem.publishDate>= fromPublishedDate && newsItem.publishDate<toPublishedDate
+            })
         }
+        console.log({filteredDataByUser})
+        setFilteredData(filteredDataByUser)
     }
-    function handleChangeFilters(_, values){
-        console.log({values})
-        if(values.keyword){
-            const filteredData=convertedData.length>0 && [...convertedData]
 
-        }
-        if(values.source){
 
-        }
-        if(values.category){
-
-        }
-        if(values.publishDate){
-
-        }
-    }
     async function getNews(){
         console.log("calling getNews")
 
@@ -154,15 +156,15 @@ function HomePage() {
             const getNewsGuardianResponse=await getNewsFromGuardian()
             console.log({getNewsGuardianResponse},getNewsGuardianResponse?.response?.status )
             if(getNewsGuardianResponse?.response?.status==="ok"){
-                setTheGuardianData(getNewsGuardianResponse?.response?.results)
+                theGuardianConvertData(getNewsGuardianResponse?.response?.results)
                 const getNewsApiResponse=await getNewsFromNewsApi();
                 console.log({getNewsApiResponse},getNewsApiResponse?.status)
                 if(getNewsApiResponse?.status==="ok"){
-                    setApiNewsData(getNewsApiResponse?.articles)
+                    apiNewsConvertData(getNewsApiResponse?.articles)
                     const getNewsNYTimesResponse=await getNewsFromNYTimes()
                     if(getNewsNYTimesResponse.status==="OK"){
                     console.log({getNewsNYTimesResponse},getNewsNYTimesResponse.status)
-                        setNYTimesData(getNewsNYTimesResponse?.response?.docs)
+                        nYTimesCovertData(getNewsNYTimesResponse?.response?.docs)
                     }
                 }
             }
@@ -178,12 +180,11 @@ function HomePage() {
             <Row>
                <Form
                 form={form}
-                // onFinish={handleFormSubmit}
                 style={{width:'100%'}}
                 onValuesChange={handleChangeFilters}
                >
                    <Row justify={"center"} style={{marginTop:'35px'}}>
-                       <Col span={10}>
+                       <Col xs={20} sm={18} md={16} lg={14} xl={10}>
                            <Row style={{width:'100%'}}>
                                <Typography style={{fontSize:'12px'}}>Search for News</Typography>
                            </Row>
@@ -197,7 +198,7 @@ function HomePage() {
                        </Col>
                    </Row>
                    <Row wrap={true} gutter={[25]} justify={"center"}>
-                       <Col span={4}>
+                       <Col xs={20} sm={10} md={6} lg={5} xl={4}>
                            <Form.Item name={"source"} label={"Sources"} >
                                <Select
                                    options={sources}
@@ -207,7 +208,7 @@ function HomePage() {
                                />
                            </Form.Item>
                        </Col>
-                       <Col span={4}>
+                       <Col xs={20} sm={10} md={6} lg={5} xl={4}>
                            <Form.Item name={"category"} label={"Categories"} >
                                <Select
                                    options={categories}
@@ -216,35 +217,34 @@ function HomePage() {
                                />
                            </Form.Item>
                        </Col>
-                       <Col span={7}>
+                       <Col xs={20} sm={10} md={10} lg={8} xl={7}>
                            <Form.Item name={"publishDate"} label={"Publish Date"} >
-                               <DatePicker
+                               <RangePicker
                                    format="YYYY-MM-DD"
-                                   showTime
                                    needConfirm={false}
                                />
                            </Form.Item>
                        </Col>
-                       <Col span={5}>
-                           <Button
-                               type={"primary"}
-                               size={"middle"}
-                               // loading={loading}
-                               htmlType={"submit"}
-                               // icon={<SearchOutlined />}
-                               color={"#E74E22"}
-                               style={{ width:'100px'}}
-                           >
-                               Search
-                           </Button>
-                       </Col>
+                       {/*<Col span={5}>*/}
+                       {/*    <Button*/}
+                       {/*        type={"primary"}*/}
+                       {/*        size={"middle"}*/}
+                       {/*        // loading={loading}*/}
+                       {/*        htmlType={"submit"}*/}
+                       {/*        // icon={<SearchOutlined />}*/}
+                       {/*        color={"#E74E22"}*/}
+                       {/*        style={{ width:'100px'}}*/}
+                       {/*    >*/}
+                       {/*        Search*/}
+                       {/*    </Button>*/}
+                       {/*</Col>*/}
                    </Row>
                </Form>
             </Row>
             <Row justify={"center"} wrap={true} gutter={[20,20]} style={{marginRight:'35px', marginLeft:"35px", marginTop:"30px", marginBottom:'50px'}}>
                 {
-                    convertedData?.length>0 ? convertedData?.map((newsItem)=>{
-                        return <Col span={6}>
+                    convertedData?.length>0 ? filteredData?.map((newsItem)=>{
+                        return <Col xs={24} sm={12} md={8} lg={8} xl={6}>
                             <Link to={`${newsItem?.url}`} target="_blank">
                                 <Card
                                     hoverable

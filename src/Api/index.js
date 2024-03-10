@@ -10,7 +10,7 @@ export async function getNewsFromGuardian(queries=""){
 }
 
 export async function getNewsFromNewsApi(queries="q=tesla"){
-    const res=axios.get(`https://newsapi.org/v2/everything?${queries}&apiKey=40f3a12f34df41db87a887067decd156`)
+    const res=axios.get(`https://newsapi.org/v2/everything?${queries}&apiKey=c32f46432a214da98b703daa33b33d72`)
         .then((response)=>{
             return response.data
         })
