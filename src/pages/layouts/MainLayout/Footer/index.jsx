@@ -9,8 +9,8 @@ function MainFooter() {
             <Col xs={0} sm={0} md={21} lg={21} xl={21}>
                 <Space split={<Divider type={'horizontal'}/>}>
                     <ul>
-                        <li style={{fontWeight:'bold'}}>Phone: <span >+98 (910)2275976</span></li>
-                        <li style={{fontWeight:'bold'}}>Address: <span>No. 7, Peyvandi Street, Shariati Avenue, Tehran, Iran</span></li>
+                        <li style={{fontWeight:'bold'}}>Phone: <span >06838 90 11 36</span></li>
+                        <li style={{fontWeight:'bold'}}>Address: <span>No. 7, Buelowstrasse 17, Berzhahn, Rheinland-Pfalz</span></li>
                     </ul>
                 </Space>
             </Col>
