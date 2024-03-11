@@ -73,10 +73,14 @@ function useLogicPersonalization() {
         // and we should call api to get sources
         !localStorage.getItem("sourceOptions") && getSources()
     }, []);
+
+    //Functions --------------------------------------------------------------------------------------------------------
     const handleFinish=()=>{
         //Probably there should be an API call to make the user's feeds customized
         console.log("submitted")
     }
+
+
     return {
         handleFinish,
         formProps:{
