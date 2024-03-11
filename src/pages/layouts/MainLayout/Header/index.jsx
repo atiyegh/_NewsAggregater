@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useState} from 'react';
 import {CloseOutlined, FacebookOutlined, InstagramOutlined, LinkedinOutlined, MenuOutlined} from "@ant-design/icons";
 import {Col, Divider, Row, Space} from "antd";
 import {Link} from "react-router-dom";
@@ -7,11 +7,8 @@ import styles from "./mainheader.module.scss"
 function MainHeader() {
     const  today=new Date();
     const [showMenu, setShowMenu] = useState(false);
-    console.log({today})
 
-    useEffect(() => {
-        console.log({showMenu})
-    }, [showMenu]);
+
     return (
         <Row  className={styles["main-header-container"]} gutter={[20]}>
             <Col xs={0} sm={24} md={15} lg={15} xl={15} >
