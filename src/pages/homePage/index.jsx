@@ -21,6 +21,11 @@ function HomePage() {
             </Row>
             <Row justify={"center"} wrap={true} gutter={[20,20]} className={styles["list-container"]}>
                 {
+                    //I did not consider any loading state as we have three api calls but I handle it in another way.
+                    //when we have convert data then there is something to be shown to the user and we should not show loading. Also, when user is
+                    //searching as we are not calling api and it is a simple filter, it will not take more than a second and does not need to show any loading.
+                    // It is also should be mentioned that when the user is searching, we should render filteredData in the page. But, when there is no
+                    //filters we will show convertedData which is the original data gotten from three apis.
                     convertedData?.length>0 ? (filteredData ?? convertedData)?.map((newsItem)=>{
                         return <Col xs={24} sm={12} md={8} lg={8} xl={6} key={newsItem?.url}>
                             <CustomCard

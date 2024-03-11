@@ -1,5 +1,5 @@
 import React from 'react';
-import {Col, Form, Row} from "antd";
+import {Button, Col, Form, Row} from "antd";
 import CustomFormItem from "./renderFormItem";
 
 //This component is to render ant design form, you can send formData as an array and there could be other repeated patterns of a form in this component
@@ -11,6 +11,7 @@ function CustomForm(props) {
         formClassName,
         formStyle,
         rowStyles,
+        submitBtnProps,
         ...rest
     }=props
 
@@ -32,6 +33,9 @@ function CustomForm(props) {
                     })
                 }
             </Row>
+            {submitBtnProps && <Row justify={'start'}>
+                <Button htmlType={"submit"} {...submitBtnProps}>{submitBtnProps?.label ?? "submit"}</Button>
+            </Row>}
         </Form>
     );
 }

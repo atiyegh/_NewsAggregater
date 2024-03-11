@@ -51,6 +51,7 @@ function useLogicHomePage() {
     //This function is to convert results of thequardian api to a unified data structure
     function theGuardianConvertData(theGuardianData){
         const theGuardianconvertedData=theGuardianData.length>0 ? theGuardianData?.map((newsItems)=>{
+            //there were no author and description in the result of theguardian api and all news sources are from theguardian.com
             return {
                 author:null,
                 description:null,
@@ -69,6 +70,8 @@ function useLogicHomePage() {
     //This function is to convert results of NYTimes api to a unified data structure
     function nYTimesCovertData(nYTimesData){
         const nYTimesConvertedData=nYTimesData?.length>0 ? nYTimesData?.map((newsItems)=>{
+            //The results of NYTimes api have an array of multimedia and in the dataset I get, all of them are images. So I consider the
+            //first item of the array as an imageSrc. Also, there are no title in the result but I consider snippest as the most close item to title.
             return {
                 author:newsItems?.byline?.original,
                 description:newsItems?.headline?.main,
@@ -88,6 +91,8 @@ function useLogicHomePage() {
     //This function is to convert results of apiNews api to a unified data structure
     function apiNewsConvertData(apiNewsData){
         const apiNwsConvertedData=apiNewsData?.length>0 ? apiNewsData?.map((newsItems)=>{
+            //In the results of apiNews there is no category field or any close field ti it. There is a required query param
+            // for the api and I consider it as a category. So, all data have the same category of "Tesla".
             return {
                 author:newsItems?.author,
                 description:newsItems?.description,
@@ -133,7 +138,7 @@ function useLogicHomePage() {
             }))
         }
 
-        //Getting intersection of all filters done by user
+        //Getting intersection of all filters done by the user
         const filteredDataByUser=filterArray?.length>0 && arraysIntersection(...filterArray)
 
         setFilteredData(filteredDataByUser ? filteredDataByUser :null )
