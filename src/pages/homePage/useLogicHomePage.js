@@ -5,7 +5,7 @@ import {arraysIntersection, getSources} from "../../utils";
 import {getNewsFromGuardian, getNewsFromNewsApi, getNewsFromNYTimes} from "../../Api";
 import styles from "./homePageStyle.module.scss";
 import useGetDataHomePage from "./useGetDataHomePage";
-
+import moment from 'moment-timezone';
 function useLogicHomePage() {
     //Hooks ------------------------------------------------------------------------------------------------------------
     const [form]=Form.useForm();
@@ -52,7 +52,7 @@ function useLogicHomePage() {
 
     //This function is to convert results of thequardian api to a unified data structure
     function theGuardianConvertData(theGuardianData){
-        const theGuardianconvertedData=theGuardianData.length>0 ? theGuardianData?.map((newsItems)=>{
+        const theGuardianconvertedData=theGuardianData?.length>0 ? theGuardianData?.map((newsItems)=>{
             //there were no author and description in the result of theguardian api and all news sources are from theguardian.com
             return {
                 author:null,
@@ -114,8 +114,9 @@ function useLogicHomePage() {
 
     //This function is to handle search by user. It also could be implemented in handelSubmit of form. But, as it will bring a better UX for user
     // to see the search results immediately after filtering, I prefer to implement it in handleChange.
-    function handleChangeFilters(_,values){
-
+    const handleChangeFilters=(_,values)=>{
+        console.log({values})
+        console.log("ssss")
         let filterArray=[];
 
         if(values?.category){
@@ -133,8 +134,11 @@ function useLogicHomePage() {
                 return values?.source?.includes(newsItem.source)}))
         }
         if(Array.isArray(values?.publishDate)){
-            const fromPublishedDate=(values?.publishDate?.length>0 && values?.publishDate[0]?.toISOString().split("T")[0]) || undefined;
-            const toPublishedDate=(values?.publishDate?.length>0 && values?.publishDate[1]?.toISOString().split("T")[0]) || undefined;
+
+            //converting Date to locale of Germany
+            const fromPublishedDate=(values?.publishDate?.length>0 && moment(values?.publishDate[0]).tz("Europe/Berlin").format('YYYY-MM-DD HH:mm:ss').split(" ")[0]) || undefined;
+            const toPublishedDate=(values?.publishDate?.length>0 &&  moment(values?.publishDate[1]).tz("Europe/Berlin").format('YYYY-MM-DD HH:mm:ss').split(" ")[0]) || undefined;
+
             filterArray.push(convertedData.filter((newsItem)=>{
                 return newsItem.publishDate>= fromPublishedDate && newsItem.publishDate<=toPublishedDate
             }))
@@ -150,6 +154,12 @@ function useLogicHomePage() {
         formPropsHomePage:{
             form:form,
             formData:formData,
+            // initialValues:{
+            //     keyword:undefined,
+            //     category:undefined,
+            //     source:undefined,
+            //     publishDate:undefined
+            // },
             onValuesChange:handleChangeFilters,
             formClassName:styles["form-container"]
         },

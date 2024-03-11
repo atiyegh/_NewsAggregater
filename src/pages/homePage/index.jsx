@@ -17,7 +17,7 @@ function HomePage() {
     return (
         <Col span={24} style={{height:convertedData.length===0 ? "100vh" : "auto"}}>
             <Row gutter={[20,20]}>
-                <CustomForm{...formPropsHomePage}/>
+                <CustomForm {...formPropsHomePage}/>
             </Row>
             <Row justify={"center"} wrap={true} gutter={[20,20]} className={styles["list-container"]}>
                 {

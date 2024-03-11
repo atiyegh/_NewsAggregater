@@ -9,11 +9,13 @@ function CustomCard(props) {
         cardProps,
         metaProps,
         type,
-        cardContent
-    }=props
+        cardContent,
+        ...rest
+    }=props;
+
     return (
         linkProps ? <Link {...linkProps}>
-            <Card {...cardProps}>
+            <Card {...cardProps} {...rest}>
                 {type==="meta" && <Meta {...metaProps}/>}
                 {cardContent}
             </Card>
