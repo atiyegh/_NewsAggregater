@@ -12,12 +12,12 @@ function useLogicHomePage() {
     const {formData}=useGetDataHomePage()
 
     //States & Variables -----------------------------------------------------------------------------------------------
-    const [convertedData, setConvertedData] = useState(convertedDta);
+    const [convertedData, setConvertedData] = useState([]);
     const [filteredData, setFilteredData] = useState(null);
 
     //UseEffects -------------------------------------------------------------------------------------------------------
     useEffect(() => {
-        // getNews()
+        getNews()
         !localStorage.getItem("sourceOptions") && getSources()
     }, []);
 
@@ -115,8 +115,6 @@ function useLogicHomePage() {
     //This function is to handle search by user. It also could be implemented in handelSubmit of form. But, as it will bring a better UX for user
     // to see the search results immediately after filtering, I prefer to implement it in handleChange.
     const handleChangeFilters=(_,values)=>{
-        console.log({values})
-        console.log("ssss")
         let filterArray=[];
 
         if(values?.category){
@@ -134,10 +132,9 @@ function useLogicHomePage() {
                 return values?.source?.includes(newsItem.source)}))
         }
         if(Array.isArray(values?.publishDate)){
-
             //converting Date to locale of Germany
-            const fromPublishedDate=(values?.publishDate?.length>0 && moment(values?.publishDate[0]).tz("Europe/Berlin").format('YYYY-MM-DD HH:mm:ss').split(" ")[0]) || undefined;
-            const toPublishedDate=(values?.publishDate?.length>0 &&  moment(values?.publishDate[1]).tz("Europe/Berlin").format('YYYY-MM-DD HH:mm:ss').split(" ")[0]) || undefined;
+            const fromPublishedDate=(values?.publishDate?.length>0 && moment(values?.publishDate[0]?.toISOString()).tz("Europe/Berlin").format('YYYY-MM-DD HH:mm:ss').split(" ")[0]) || undefined;
+            const toPublishedDate=(values?.publishDate?.length>0 &&  moment(values?.publishDate[1]?.toISOString()).tz("Europe/Berlin").format('YYYY-MM-DD HH:mm:ss').split(" ")[0]) || undefined;
 
             filterArray.push(convertedData.filter((newsItem)=>{
                 return newsItem.publishDate>= fromPublishedDate && newsItem.publishDate<=toPublishedDate

@@ -2,7 +2,6 @@ import {getSourcesForApiNews} from "../Api";
 
 //This function get multiple arrays and returns intersection of those arrays
 export const arraysIntersection = (...arrays) => {
-    console.log(...arrays)
     return arrays.reduce((accumulator, currentArray) => {
         return accumulator.filter(value => currentArray.includes(value));
     });
@@ -14,9 +13,6 @@ export const arraysIntersection = (...arrays) => {
 export  async function getSources(){
     try{
         const apiNewsSourcesResponse=await getSourcesForApiNews();
-        console.log({
-            apiNewsSourcesResponse
-        })
         if(apiNewsSourcesResponse?.status==="ok"){
             const sourceOptions=apiNewsSourcesResponse?.sources?.map((src)=>{
                 return {
