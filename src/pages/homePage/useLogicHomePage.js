@@ -26,9 +26,11 @@ function useLogicHomePage() {
 
     //This function is to calling api to get news from three apis of theguardian, newsapi and nytimes. The results of these apis will
     // be converted to a unified data structure that can be used for search, sort and render data. User search is handled by front end.
-    // It is better to handle search by api specifically when the dataset is heavy. But as in this example the dataset is small and we have
-    //three apis with different data structures it would be challenging to sort, search and render. So, in this example I prefer to
-    // first convert data to a unfied data structure and then use it anywhere or do any further operation on the data.
+    // It is better to handle search by api specifically when the dataset is heavy. But as in this example, the dataset is small and we have
+    //three apis with different data structures it is better to call apis one time, convert and use it for further operations. If we
+    // design the app to call api for each search we should handle each operation for each api separately and it is not efficient. Also,
+    // we should consider probable scaling up the app. For example, what if we had 10 apis instead of 3 apis, then it would be hard to maintain the code and not OOP.
+    // So, in this example I prefer to first convert data to a unified data structure and then use it anywhere or do any further operation on the data.
     async function getNews(){
         try{
             const getNewsGuardianResponse=await getNewsFromGuardian()
